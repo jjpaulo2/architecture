@@ -1,6 +1,6 @@
 # Architecture
 
-Some architecture issues that I got and solutions proposed by me.
+Some architecture challenges that I got and solutions proposed by me.
 
 ### Sumary
 

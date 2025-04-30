@@ -1,10 +1,11 @@
-# Integrações com APIs lentas
+Title: Integrações com APIs lentas
+Date: 2025-04-27 21:00
+Lang: pt-br
+Tags: db, queue, messagery, api
+Authors: João Paulo Carvalho
+
 
 ![Language](https://img.shields.io/badge/Language-PT--BR-green)
-
-| Author | Date | Topics |
-|-|-|-|
-| @jjpaulo2 | 27-04-2025 | `queue`, `messagery`, `database`, `API`, `monitoring` |
 
 ## Introdução
 
@@ -12,7 +13,7 @@ Você é desenvolvedor em um time de uma empresa de consultoria financeira. A em
 
 Imagine que a API foi pensada inicialmente da forma a seguir.
 
-```mermaid
+<pre class="mermaid">
 flowchart BT
     web_page@{ shape: procs, label: "Página web"}
     subgraph Externo
@@ -28,7 +29,7 @@ flowchart BT
         db[(Banco de dados)]
     end
 
-    style api fill:#044
+    style api fill:#0AA
 
     web_page <-->|Consulta| api
     api <-->|Classifica| classifier_api 
@@ -36,13 +37,13 @@ flowchart BT
     external_api_1 <-->|Consulta| api
     external_api_2 <-->|Consulta| api
     external_api_3 <-->|Consulta| api
-```
+</pre>
 
 Uma página web consulta a sua API numa busca por resultados, mas esta busca depende de 3 consultas em APIs externas, um enrequecimento interno em uma API de classificações, e um registro em banco de dados.
 
 A ordem em que as operações são executadas é mostrada abaixo.
 
-```mermaid
+<pre class="mermaid">
 sequenceDiagram
     Página web ->> API: Requisição
     activate API
@@ -74,7 +75,7 @@ sequenceDiagram
 
     API ->> Página web: Resposta
     deactivate API
-```
+</pre>
 
 Abaixo há um exemplo de dados enviados para a nossa API.
 
@@ -117,7 +118,7 @@ A principal ideia por trás da melhoria, é manter as operações demoradas, com
 
 Dessa forma, os componentes da arquitetura, ficam distribuídos como mostrado abaixo.
 
-```mermaid
+<pre class="mermaid">
 flowchart TB
     web_page@{ shape: procs, label: "Página web"}
     subgraph Externo
@@ -143,7 +144,7 @@ flowchart TB
         worker_4(Worker 4)
     end
 
-    style api fill:#044
+    style api fill:#0AA
 
     web_page <-->|Consulta| api
     api <-->|Consulta| db
@@ -164,11 +165,11 @@ flowchart TB
     queue_4 -->|Consumidor| worker_4
     worker_4 <-->|Salva novos dados classificados| db
     classifier_api <-->|Consulta| worker_4
-```
+</pre>
 
 Em tempo de tela, as operações serão executadas da seguinte forma.
 
-```mermaid
+<pre class="mermaid">
 sequenceDiagram
     Página web ->> API: Requisição
     activate API
@@ -189,13 +190,13 @@ sequenceDiagram
 
     API ->> Página web: Resposta
     deactivate API
-```
+</pre>
 
 O uso de cache é um dos principais elementos que deve nos ajudar a diminuir a sobrecarga de consultas ao banco. Ele também pode ser usado como semáforo para garantir que não haja consultas em excesso às APIs externas, o que poderia derrubar nossos parceiros.
 
 Enquanto o usuário já possui dados em tela, a rotina de atualização estará sendo executada assincronamente. Cada uma das consultas externas, será executada na ordem mostrada abaixo.
 
-```mermaid
+<pre class="mermaid">
 sequenceDiagram
     Fila de consulta -->> Worker de consulta: Consumo
     Worker de consulta ->> API externa: Requisição
@@ -211,7 +212,7 @@ sequenceDiagram
     deactivate API de classificação
 
     Worker de classificação ->> Banco de dados: Registra novos dados
-```
+</pre>
 
 O endpoint, a princípio, pode ser mantido com o mesmo contrato, mas com a adição de paginação. O que de cara, também já deve reduzir os impactos em performance nas consultas ao banco.
 
@@ -258,3 +259,8 @@ Abaixo há um exemplo de dados retornados paginados pela API.
 ### Melhorias futuras
 
 - Caso ainda hajam gargalos com o banco de dados, poderiam ser criadas duas intâncias separadas. Uma apenas de leitura e outra apenas de escrita. Com rotinas de atualização constantes.
+
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true });
+</script>
